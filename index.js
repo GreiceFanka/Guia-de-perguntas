@@ -35,8 +35,8 @@ app.get("/perguntar", (req,res)=>{
     res.render("perguntar");
 })
 
+//Pegando os valores do formulario
 app.post("/salvarperguntas",(req,res)=>{
-    //Pegando os valores do formulario 
     let titulo = req.body.titulo;
     let descricao = req.body.descricao;
     Pergunta.create({
@@ -54,12 +54,32 @@ app.get("/pergunta/:id", (req,res)=>{
         where:{id:id}
     }).then(pergunta =>{
         if(pergunta != undefined){
-            res.render("pergunta",{
-                pergunta:pergunta
-            });
+            Resposta.findAll({
+                where:{perguntaId:pergunta.id},
+                order:[
+                    ['id','DESC']
+                ]
+            }).then(respostas =>{
+                res.render("pergunta",{
+                    pergunta:pergunta,
+                    respostas:respostas
+                });
+            })
         } else{
             res.redirect("/");
         }
+    })
+})
+
+//Rota para envio de resposta
+app.post("/responder",(req,res)=>{
+    let corpo = req.body.corpo;
+    let perguntaId = req.body.pergunta;
+    Resposta.create({
+        corpo:corpo,
+        perguntaId:perguntaId
+    }).then(()=>{
+        res.redirect("/pergunta/"+ perguntaId);
     })
 })
 
